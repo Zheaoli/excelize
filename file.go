@@ -79,6 +79,7 @@ func (f *File) Write(w io.Writer) error {
 func (f *File) WriteTo(w io.Writer) (int64, error) {
 	buf := new(bytes.Buffer)
 	zw := zip.NewWriter(buf)
+	f.writeContent()
 	for path, content := range f.XLSX {
 		fi, err := zw.Create(path)
 		if err != nil {
@@ -106,6 +107,7 @@ func (f *File) writeContent() {
 func (f *File) GenerateReader() (io.Reader, error) {
 	buf := new(bytes.Buffer)
 	zw := zip.NewWriter(buf)
+	f.writeContent()
 	for path, content := range f.XLSX {
 		fi, err := zw.Create(path)
 		if err != nil {
