@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 // NewFile provides a function to create new file by default template. For
@@ -78,11 +79,6 @@ func (f *File) Write(w io.Writer) error {
 func (f *File) WriteTo(w io.Writer) (int64, error) {
 	buf := new(bytes.Buffer)
 	zw := zip.NewWriter(buf)
-	f.contentTypesWriter()
-	f.workbookWriter()
-	f.workbookRelsWriter()
-	f.worksheetWriter()
-	f.styleSheetWriter()
 	for path, content := range f.XLSX {
 		fi, err := zw.Create(path)
 		if err != nil {
@@ -99,4 +95,33 @@ func (f *File) WriteTo(w io.Writer) (int64, error) {
 	}
 
 	return buf.WriteTo(w)
+}
+func (f *File) writeContent() {
+	f.contentTypesWriter()
+	f.workbookWriter()
+	f.workbookRelsWriter()
+	f.worksheetWriter()
+	f.styleSheetWriter()
+}
+func (f *File) GenerateReader() (io.Reader, error) {
+	buf := new(bytes.Buffer)
+	zw := zip.NewWriter(buf)
+	for path, content := range f.XLSX {
+		fi, err := zw.Create(path)
+		if err != nil {
+			return nil, err
+		}
+		_, err = fi.Write(content)
+		if err != nil {
+			return nil, err
+		}
+	}
+	err := zw.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	tempReader := strings.NewReader(buf.String())
+	buf.Reset()
+	return tempReader, nil
 }
