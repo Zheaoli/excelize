@@ -13,8 +13,10 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
+	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"io"
 	"os"
+	"strings"
 )
 
 // NewFile provides a function to create new file by default template. For
@@ -99,4 +101,32 @@ func (f *File) WriteTo(w io.Writer) (int64, error) {
 	}
 
 	return buf.WriteTo(w)
+}
+
+func (f *File) WriteToOSS(bucket *oss.Bucket, fileName string) (int64, error) {
+	buf := new(bytes.Buffer)
+	zw := zip.NewWriter(buf)
+	f.contentTypesWriter()
+	f.workbookWriter()
+	f.workbookRelsWriter()
+	f.worksheetWriter()
+	f.styleSheetWriter()
+	for path, content := range f.XLSX {
+		fi, err := zw.Create(path)
+		if err != nil {
+			return 0, err
+		}
+		_, err = fi.Write(content)
+		if err != nil {
+			return 0, err
+		}
+	}
+	err := zw.Close()
+	if err != nil {
+		return 0, err
+	}
+
+}
+func writeBufferToOSS(bucket *oss.Bucket, fileName string, data bytes.Buffer) (int64, error) {
+	return 0, bucket.PutObject(fileName, strings.NewReader(data.String()))
 }
