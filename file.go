@@ -122,6 +122,5 @@ func (f *File) GenerateReader() (io.Reader, error) {
 	}
 
 	tempReader := strings.NewReader(buf.String())
-	buf.Reset()
 	return tempReader, nil
 }
