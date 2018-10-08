@@ -125,8 +125,8 @@ func (f *File) WriteToOSS(bucket *oss.Bucket, fileName string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-
+	return writeBufferToOSS(bucket, fileName, buf)
 }
-func writeBufferToOSS(bucket *oss.Bucket, fileName string, data bytes.Buffer) (int64, error) {
+func writeBufferToOSS(bucket *oss.Bucket, fileName string, data *bytes.Buffer) (int64, error) {
 	return 0, bucket.PutObject(fileName, strings.NewReader(data.String()))
 }
